@@ -39,6 +39,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
@@ -247,6 +248,12 @@ public class OpenSSHKeyFileTest {
         checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_aes256cbc.pem", "foobar", true);
     }
 
+    @Test
+    public void shouldLoadProtectedED25519PrivateKeyAes128CBC() throws IOException {
+        checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_aes128cbc.pem", "sshjtest", false);
+        checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_aes128cbc.pem", "sshjtest", true);
+    }
+
     @Test(expected = KeyDecryptionFailedException.class)
     public void shouldFailOnIncorrectPassphraseAfterRetries() throws IOException {
         OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
@@ -435,6 +442,14 @@ public class OpenSSHKeyFileTest {
                      corruptedKeyFile.getPrivate());
         assertEquals(initialKeyFile.getPublic(),
                      corruptedKeyFile.getPublic());
+    }
+
+    @Test
+    public void emptyPrivateKey() {
+        FileKeyProvider keyProvider = new OpenSSHKeyV1KeyFile();
+        keyProvider.init(new StringReader(""));
+
+        assertThrows("This key is not in 'openssh-key-v1' format", IOException.class, keyProvider::getPrivate);
     }
 
     @Before
