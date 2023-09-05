@@ -17,12 +17,12 @@ package net.schmizz.sshj.keyprovider;
 
 import net.schmizz.sshj.userauth.keyprovider.KeyFormat;
 import net.schmizz.sshj.userauth.keyprovider.KeyProviderUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class KeyProviderUtilTest {
 
@@ -35,9 +35,9 @@ public class KeyProviderUtilTest {
     }
 
     @Test
-    public void testPkcs5() throws IOException {
-        KeyFormat format = KeyProviderUtil.detectKeyFileFormat(new File(ROOT, "pkcs5"));
-        assertEquals(KeyFormat.PKCS5, format);
+    public void testPkcs1Rsa() throws IOException {
+        KeyFormat format = KeyProviderUtil.detectKeyFileFormat(new File(ROOT, "pkcs1-rsa"));
+        assertEquals(KeyFormat.PKCS8, format);
     }
 
     @Test

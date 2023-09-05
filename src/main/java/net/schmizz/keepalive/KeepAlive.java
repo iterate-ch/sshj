@@ -35,14 +35,29 @@ public abstract class KeepAlive extends Thread {
         setDaemon(true);
     }
 
+    /**
+     * KeepAlive enabled based on KeepAlive interval
+     *
+     * @return Enabled when KeepInterval is greater than 0
+     */
     public boolean isEnabled() {
         return keepAliveInterval > 0;
     }
 
+    /**
+     * Get KeepAlive interval in seconds
+     *
+     * @return KeepAlive interval in seconds defaults to 0
+     */
     public synchronized int getKeepAliveInterval() {
         return keepAliveInterval;
     }
 
+    /**
+     * Set KeepAlive interval in seconds
+     *
+     * @param keepAliveInterval KeepAlive interval in seconds
+     */
     public synchronized void setKeepAliveInterval(int keepAliveInterval) {
         this.keepAliveInterval = keepAliveInterval;
     }
@@ -60,6 +75,8 @@ public abstract class KeepAlive extends Thread {
                 TimeUnit.SECONDS.sleep(interval);
             }
         } catch (InterruptedException e) {
+            // this is almost certainly a planned interruption, but even so, no harm in setting the interrupt flag
+            Thread.currentThread().interrupt();
             log.trace("{} Interrupted while sleeping", getClass().getSimpleName());
         } catch (Exception e) {
             // If we weren't interrupted, kill the transport, then this exception was unexpected.
