@@ -47,7 +47,7 @@ public class KeyExchangeRepeatTest {
         config = new DefaultConfig() {
             @Override
             protected void initKeyExchangeFactories() {
-                setKeyExchangeFactories(Collections.singletonList(new Factory.Named<>() {
+                setKeyExchangeFactories(Collections.singletonList(new Factory.Named() {
                     @Override
                     public KeyExchange create() {
                         return kex;
