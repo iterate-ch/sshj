@@ -15,12 +15,16 @@
  */
 package net.schmizz.sshj.sftp;
 
+import com.hierynomus.sshj.sftp.RemoteResourceSelector;
+import net.schmizz.sshj.connection.channel.direct.SessionFactory;
 import net.schmizz.sshj.xfer.LocalDestFile;
 import net.schmizz.sshj.xfer.LocalSourceFile;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+
+import static com.hierynomus.sshj.sftp.RemoteResourceFilterConverter.selectorFrom;
 
 public class StatefulSFTPClient
         extends SFTPClient {
@@ -30,6 +34,12 @@ public class StatefulSFTPClient
     public StatefulSFTPClient(SFTPEngine engine)
             throws IOException {
         super(engine);
+        this.cwd = getSFTPEngine().canonicalize(".");
+        log.debug("Start dir = {}", cwd);
+    }
+
+    public StatefulSFTPClient(SessionFactory sessionFactory) throws IOException {
+        super(sessionFactory);
         this.cwd = getSFTPEngine().canonicalize(".");
         log.debug("Start dir = {}", cwd);
     }
@@ -50,7 +60,7 @@ public class StatefulSFTPClient
 
     public synchronized List<RemoteResourceInfo> ls()
             throws IOException {
-        return ls(cwd, null);
+        return ls(cwd, RemoteResourceSelector.ALL);
     }
 
     public synchronized List<RemoteResourceInfo> ls(RemoteResourceFilter filter)
@@ -63,20 +73,21 @@ public class StatefulSFTPClient
         return super.canonicalize(cwd);
     }
 
-    @Override
     public List<RemoteResourceInfo> ls(String path)
             throws IOException {
-        return ls(path, null);
+        return ls(path, RemoteResourceSelector.ALL);
+    }
+
+    public List<RemoteResourceInfo> ls(String path, RemoteResourceFilter filter)
+            throws IOException {
+        return ls(path, selectorFrom(filter));
     }
 
     @Override
-    public List<RemoteResourceInfo> ls(String path, RemoteResourceFilter filter)
+    public List<RemoteResourceInfo> ls(String path, RemoteResourceSelector selector)
             throws IOException {
-        final RemoteDirectory dir = getSFTPEngine().openDir(cwdify(path));
-        try {
-            return dir.scan(filter);
-        } finally {
-            dir.close();
+        try (RemoteDirectory dir = getSFTPEngine().openDir(cwdify(path))) {
+            return dir.scan(selector == null ? RemoteResourceSelector.ALL : selector);
         }
     }
 
