@@ -146,8 +146,9 @@ public class SshdContainer extends GenericContainer<SshdContainer> {
                     .withFileFromString("sshd_config", sshdConfig.build());
         }
 
+        @Override
         public void accept(@NotNull DockerfileBuilder builder) {
-            builder.from("alpine:3.18.3");
+            builder.from("alpine:3.19.0");
             builder.run("apk add --no-cache openssh");
             builder.expose(22);
             builder.copy("entrypoint.sh", "/entrypoint.sh");
@@ -214,6 +215,9 @@ public class SshdContainer extends GenericContainer<SshdContainer> {
                 case STDERR:
                     logger().info("sshd stderr: {}", outputFrame.getUtf8String().stripTrailing());
                     break;
+                case END:
+                    break;
+
             }
         });
     }

@@ -15,6 +15,8 @@
  */
 package net.schmizz.sshj.sftp;
 
+import com.hierynomus.sshj.sftp.RemoteResourceSelector;
+import net.schmizz.sshj.connection.channel.direct.SessionFactory;
 import net.schmizz.sshj.xfer.FilePermission;
 import net.schmizz.sshj.xfer.LocalDestFile;
 import net.schmizz.sshj.xfer.LocalSourceFile;
@@ -23,6 +25,8 @@ import org.slf4j.Logger;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.*;
+
+import static com.hierynomus.sshj.sftp.RemoteResourceFilterConverter.selectorFrom;
 
 public class SFTPClient
         implements Closeable {
@@ -39,6 +43,13 @@ public class SFTPClient
         this.xfer = new SFTPFileTransfer(engine);
     }
 
+    public SFTPClient(SessionFactory sessionFactory) throws IOException {
+        this.engine = new SFTPEngine(sessionFactory);
+        this.engine.init();
+        log = engine.getLoggerFactory().getLogger(getClass());
+        this.xfer = new SFTPFileTransfer(engine);
+    }
+
     public SFTPEngine getSFTPEngine() {
         return engine;
     }
@@ -49,16 +60,18 @@ public class SFTPClient
 
     public List<RemoteResourceInfo> ls(String path)
             throws IOException {
-        return ls(path, null);
+        return ls(path, RemoteResourceSelector.ALL);
     }
 
     public List<RemoteResourceInfo> ls(String path, RemoteResourceFilter filter)
             throws IOException {
-        final RemoteDirectory dir = engine.openDir(path);
-        try {
-            return dir.scan(filter);
-        } finally {
-            dir.close();
+        return ls(path, selectorFrom(filter));
+    }
+
+    public List<RemoteResourceInfo> ls(String path, RemoteResourceSelector selector)
+            throws IOException {
+        try (RemoteDirectory dir = engine.openDir(path)) {
+            return dir.scan(selector == null ? RemoteResourceSelector.ALL : selector);
         }
     }
 
@@ -232,7 +245,7 @@ public class SFTPClient
             throws IOException {
         xfer.download(source, dest);
     }
-    
+
     public void get(String source, String dest, long byteOffset)
             throws IOException {
         xfer.download(source, dest, byteOffset);
@@ -252,7 +265,7 @@ public class SFTPClient
             throws IOException {
         xfer.download(source, dest);
     }
-    
+
     public void get(String source, LocalDestFile dest, long byteOffset)
             throws IOException {
         xfer.download(source, dest, byteOffset);
@@ -262,7 +275,7 @@ public class SFTPClient
             throws IOException {
         xfer.upload(source, dest);
     }
-    
+
     public void put(LocalSourceFile source, String dest, long byteOffset)
             throws IOException {
         xfer.upload(source, dest, byteOffset);

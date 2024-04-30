@@ -420,13 +420,13 @@ public final class TransportImpl
         try {
 
             if (kexer.isKexOngoing()) {
-                // Only transport layer packets (1 to 49) allowed except SERVICE_REQUEST
+                // Only transport layer packets (1 to 49) allowed except SERVICE_REQUEST and IGNORE
                 final Message m = Message.fromByte(payload.array()[payload.rpos()]);
-                if (!m.in(1, 49) || m == Message.SERVICE_REQUEST) {
+                if (!m.in(1, 49) || m == Message.SERVICE_REQUEST || m == Message.IGNORE) {
                     assert m != Message.KEXINIT;
                     kexer.waitForDone();
                 }
-            } else if (encoder.getSequenceNumber() == 0) // We get here every 2**32th packet
+            } else if (encoder.isSequenceNumberAtMax()) // We get here every 2**32th packet
                 kexer.startKex(true);
 
             final long seq = encoder.encode(payload);
@@ -479,9 +479,20 @@ public final class TransportImpl
 
         log.trace("Received packet {}", msg);
 
+        if (kexer.isInitialKex()) {
+            if (decoder.isSequenceNumberAtMax()) {
+                throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED,
+                    "Sequence number of decoder is about to wrap during initial key exchange");
+            }
+            if (kexer.isStrictKex() && !isKexerPacket(msg) && msg != Message.DISCONNECT) {
+                throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED,
+                    "Unexpected packet type during initial strict key exchange");
+            }
+        }
+
         if (msg.geq(50)) { // not a transport layer packet
             service.handle(msg, buf);
-        } else if (msg.in(20, 21) || msg.in(30, 49)) { // kex packet
+        } else if (isKexerPacket(msg)) {
             kexer.handle(msg, buf);
         } else {
             switch (msg) {
@@ -511,6 +522,10 @@ public final class TransportImpl
                     break;
             }
         }
+    }
+
+    private static boolean isKexerPacket(Message msg) {
+        return msg.in(20, 21) || msg.in(30, 49);
     }
 
     private void gotDebug(SSHPacket buf)
