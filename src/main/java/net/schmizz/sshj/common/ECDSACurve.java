@@ -13,21 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.schmizz.sshj.userauth.password;
+package net.schmizz.sshj.common;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+/**
+ * Enumeration of supported ECDSA Curves with corresponding algorithm parameter names
+ */
+public enum ECDSACurve {
+    /** NIST P-256 */
+    SECP256R1("secp256r1"),
 
-public class PrivateKeyFileResource
-        extends Resource<File> {
+    /** NIST P-384 */
+    SECP384R1("secp384r1"),
 
-    public PrivateKeyFileResource(File privateKeyFile) {
-        super(privateKeyFile);
+    /** NIST P-521 */
+    SECP521R1("secp521r1");
+
+    private final String curveName;
+
+    ECDSACurve(final String curveName) {
+        this.curveName = curveName;
     }
 
-    @Override
-    public Reader getReader()
-            throws IOException {
-        return new InputStreamReader(new FileInputStream(getDetail()), StandardCharsets.UTF_8);
+    /**
+     * Get Curve Name for use with Java Cryptography Architecture components
+     *
+     * @return Curve Name
+     */
+    public String getCurveName() {
+        return curveName;
     }
 }

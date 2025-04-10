@@ -15,8 +15,6 @@
  */
 package com.hierynomus.sshj.common;
 
-import org.bouncycastle.openssl.EncryptionException;
-
 import java.io.IOException;
 
 /**
@@ -28,11 +26,15 @@ public class KeyDecryptionFailedException extends IOException {
 
     public static final String MESSAGE = "Decryption of the key failed. A supplied passphrase may be incorrect.";
 
-    public KeyDecryptionFailedException() {
-        super(MESSAGE);
+    public KeyDecryptionFailedException(final String message) {
+        super(message);
     }
 
-    public KeyDecryptionFailedException(EncryptionException cause) {
+    public KeyDecryptionFailedException(final String message, final Throwable cause) {
+        super(message, cause);
+    }
+
+    public KeyDecryptionFailedException(IOException cause) {
         super(MESSAGE, cause);
     }
 
