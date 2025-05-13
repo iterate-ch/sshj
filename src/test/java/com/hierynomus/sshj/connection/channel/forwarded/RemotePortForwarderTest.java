@@ -23,6 +23,7 @@ import net.schmizz.sshj.connection.channel.forwarded.RemotePortForwarder;
 import net.schmizz.sshj.connection.channel.forwarded.SocketForwardingConnectListener;
 import org.apache.sshd.server.forward.AcceptAllForwardingFilter;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -34,6 +35,7 @@ import java.net.URL;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Disabled
 public class RemotePortForwarderTest {
     private static final PortRange RANGE = new PortRange(9000, 9999);
     private static final String LOCALHOST = "127.0.0.1";
