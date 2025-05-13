@@ -158,7 +158,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <additionalparam>-Xdoclint:none</additionalparam>
+                    <source>8</source>
+                    <doclint>none</doclint>
                     <encoding>${source.encoding}</encoding>
                 </configuration>
             </plugin>
