@@ -22,7 +22,7 @@ jobs:
     name: Label by PR title
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v7
+      - uses: actions/github-script@v9
         with:
           script: |
             const title = context.payload.pull_request.title.toLowerCase();
